@@ -12,7 +12,7 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-  <!-- Babel (للسماح بكتابة JSX مباشرة في المتصفح) -->
+  <!-- Babel (JSX) -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body class="bg-gray-100">
@@ -24,7 +24,6 @@
     function App() {
       const profileTypes = ["HEA", "HEB", "HEM"];
 
-      // بيانات المقاطع (لاحظ أن بعض قيَم 320–400 مكانها مؤقت للتجربة)
       const profiles = {
         HEA100: { b: 100, w: 17.1 }, HEA120: { b: 120, w: 20.4 },
         HEA140: { b: 140, w: 24.7 }, HEA160: { b: 160, w: 29.4 },
@@ -57,49 +56,27 @@
           title: "حاسبة قص وتجميع جناحي H مع الوزن",
           profileType: "نوع المقطع:", size: "المقاس:",
           angle: "زاوية التجميع المطلوبة (°):", length: "طول القطعة (م):",
-          button: "احسب القطع والوزن", send: "إرسال المقاسات",
-          result: "نتائج الحساب:", flange: "عرض الجناح العلوي:",
+          button: "احسب القطع والوزن", flange: "عرض الجناح العلوي:",
           cutAngle: "زاوية القص لكل جناح:", cutLength: "طول الجزء المقطوع:",
           remaining: "الجزء المتبقي من الجناح:", joint: "زاوية التجميع النهائية:",
           weightPerM: "الوزن لكل متر:", totalWeight: "الوزن الكلي:",
-          exportPDF: "تصدير إلى PDF", history: "التاريخ",
-          previousCalculations: "الحسابات السابقة",
           ok: "✅ تمت العملية بنجاح",
           notFound: (k) => `المقطع ${k} غير موجود في الجدول`,
           invalidLen: "أدخل طولًا صالحًا (> 0)",
-          invalidAngle: "الزاوية بين 10° و 60°"
+          invalidAngle: "الزاوية بين 5° و 60°"
         },
         en: {
           title: "H Beam Cut & Join Calculator with Weight",
           profileType: "Profile Type:", size: "Size:",
           angle: "Joint Angle (°):", length: "Length (m):",
-          button: "Calculate Cut & Weight", send: "Send Measurements",
-          result: "Calculation Result:", flange: "Top Flange Width:",
+          button: "Calculate Cut & Weight", flange: "Top Flange Width:",
           cutAngle: "Cut Angle per Flange:", cutLength: "Cut Length:",
           remaining: "Remaining Flange:", joint: "Final Joint Angle:",
           weightPerM: "Weight per Meter:", totalWeight: "Total Weight:",
-          exportPDF: "Export to PDF", history: "History",
-          previousCalculations: "Previous Calculations",
           ok: "✅ Calculation successful",
           notFound: (k) => `Profile ${k} is not available`,
           invalidLen: "Enter a valid length (> 0)",
-          invalidAngle: "Angle must be between 10° and 60°"
-        },
-        de: {
-          title: "H-Träger Schneide- und Verbindungsrechner mit Gewicht",
-          profileType: "Profiltyp:", size: "Größe:",
-          angle: "Verbindungswinkel (°):", length: "Länge (m):",
-          button: "Schnitt & Gewicht berechnen", send: "Maße senden",
-          result: "Berechnungsergebnis:", flange: "Oberer Flanschbreite:",
-          cutAngle: "Schnittwinkel pro Flansch:", cutLength: "Schnittlänge:",
-          remaining: "Verbleibender Flansch:", joint: "Endverbindungswinkel:",
-          weightPerM: "Gewicht pro Meter:", totalWeight: "Gesamtgewicht:",
-          exportPDF: "Als PDF exportieren", history: "Verlauf",
-          previousCalculations: "Vorherige Berechnungen",
-          ok: "✅ Berechnung erfolgreich",
-          notFound: (k) => `Profil ${k} ist nicht vorhanden`,
-          invalidLen: "Gültige Länge eingeben (> 0)",
-          invalidAngle: "Winkel muss zwischen 10° und 60° sein"
+          invalidAngle: "Angle must be between 5° and 60°"
         }
       };
 
@@ -113,9 +90,6 @@
         return Object.keys(profiles)
           .filter(k => k.startsWith(profileType))
           .map(k => k.replace(profileType, ""))
-          .filter(s => /^\d+$/.test(s))
-          .map(Number)
-          .sort((a,b)=>a-b)
           .map(String);
       }, [profileType]);
 
@@ -138,11 +112,11 @@
 
         if (!profile) { setError(t.notFound(key)); setResult(null); setSuccess(""); return; }
         if (!Number.isFinite(length) || length <= 0) { setError(t.invalidLen); setResult(null); setSuccess(""); return; }
-        if (!Number.isFinite(jointAngle) || jointAngle < 10 || jointAngle > 60) { setError(t.invalidAngle); setResult(null); setSuccess(""); return; }
+        if (!Number.isFinite(jointAngle) || jointAngle < 5 || jointAngle > 60) { setError(t.invalidAngle); setResult(null); setSuccess(""); return; }
 
         setError(""); setSuccess(t.ok);
 
-        const flangeWidth = profile.b; // mm
+        const flangeWidth = profile.b;
         const cutAngle = jointAngle / 2;
         const angleRad = (cutAngle * Math.PI) / 180;
         const cutLength = flangeWidth * Math.tan(angleRad);
@@ -171,14 +145,9 @@
       return (
         <div dir={dir} className={`min-h-screen p-6 ${align}`}>
           <div className="flex justify-end mb-4">
-            <select
-              value={lang}
-              onChange={(e)=>{ setLang(e.target.value); setError(""); setSuccess(""); }}
-              className="p-2 border rounded"
-            >
+            <select value={lang} onChange={(e)=> setLang(e.target.value)} className="p-2 border rounded">
               <option value="ar">العربية</option>
               <option value="en">English</option>
-              <option value="de">Deutsch</option>
             </select>
           </div>
 
@@ -187,43 +156,30 @@
 
             <div className="mb-4">
               <label className="block font-semibold mb-2">{t.profileType}</label>
-              <select
-                value={profileType}
-                onChange={(e)=>{ setProfileType(e.target.value); setResult(null); setError(""); setSuccess(""); }}
-                className="w-full p-2 border rounded"
-              >
+              <select value={profileType} onChange={(e)=> setProfileType(e.target.value)} className="w-full p-2 border rounded">
                 {profileTypes.map((type)=>(<option key={type} value={type}>{type}</option>))}
               </select>
             </div>
 
             <div className="mb-4">
               <label className="block font-semibold mb-2">{t.size}</label>
-              <select
-                value={profileSize}
-                onChange={(e)=>{ setProfileSize(e.target.value); setResult(null); setError(""); setSuccess(""); }}
-                className="w-full p-2 border rounded"
-              >
+              <select value={profileSize} onChange={(e)=> setProfileSize(e.target.value)} className="w-full p-2 border rounded">
                 {availableSizes.map((size)=>(<option key={size} value={size}>{size}</option>))}
               </select>
             </div>
 
             <div className="mb-4">
               <label className="block font-semibold mb-2">{t.angle}</label>
-              <input type="range" min="10" max="60" value={jointAngle}
-                     onChange={(e)=>setJointAngle(parseInt(e.target.value))}
-                     className="w-full"/>
+              <input type="range" min="5" max="60" value={jointAngle} onChange={(e)=> setJointAngle(parseInt(e.target.value))} className="w-full"/>
               <div className="text-center font-bold mt-2">{jointAngle}°</div>
             </div>
 
             <div className="mb-4">
               <label className="block font-semibold mb-2">{t.length}</label>
-              <input type="number" min="0.1" step="0.1" value={length}
-                     onChange={(e)=>setLength(parseFloat(e.target.value))}
-                     className="w-full p-2 border rounded"/>
+              <input type="number" min="0.1" step="0.1" value={length} onChange={(e)=> setLength(parseFloat(e.target.value))} className="w-full p-2 border rounded"/>
             </div>
 
-            <button onClick={calculate}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition mb-6">
+            <button onClick={calculate} className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition mb-6">
               {t.button}
             </button>
 
@@ -243,30 +199,14 @@
             )}
 
             <div className="mt-6">
-              <h2 className="text-lg font-bold mb-4 text-center">
-                {lang === "de" ? "Endform nach dem Zusammenbau"
-                  : lang === "en" ? "Final shape after assembly"
-                  : "الشكل النهائي بعد التجميع"}
-              </h2>
+              <h2 className="text-lg font-bold mb-4 text-center">الشكل النهائي بعد التجميع</h2>
               <div className="flex justify-center">
-                <svg width="420" height="220" viewBox="0 0 420 220"
-                     xmlns="http://www.w3.org/2000/svg"
-                     className="mx-auto shadow-md p-4 bg-white rounded-lg">
-                  <polygon
-                    points={`50,110 50,${scaleY(display.cutLength)} 160,80 160,140`}
-                    fill="#4f46e5" opacity="0.9" stroke="#3730a3" strokeWidth="2"/>
+                <svg width="420" height="220" viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg" className="mx-auto shadow-md p-4 bg-white rounded-lg">
+                  <polygon points={`50,110 50,${scaleY(display.cutLength)} 160,80 160,140`} fill="#4f46e5" opacity="0.9" stroke="#3730a3" strokeWidth="2"/>
                   <rect x="160" y="80" width="100" height="60" fill="#1e40af" rx="3"/>
-                  <polygon
-                    points={`370,110 370,${scaleY(display.cutLength)} 260,80 260,140`}
-                    fill="#3b82f6" opacity="0.9" stroke="#2563eb" strokeWidth="2"/>
+                  <polygon points={`370,110 370,${scaleY(display.cutLength)} 260,80 260,140`} fill="#3b82f6" opacity="0.9" stroke="#2563eb" strokeWidth="2"/>
                   <line x1="160" y1="80" x2="260" y2="80" stroke="#ef4444" strokeWidth="2" strokeDasharray="4"/>
-                  <text x="210" y="70" fontSize="12" fill="#ef4444" textAnchor="middle">
-                    {lang === "de" ? `Winkel = ${display.jointAngle}°`
-                      : lang === "en" ? `Angle = ${display.jointAngle}°`
-                      : `الزاوية = ${display.jointAngle}°`}
-                  </text>
-                  <text x="105" y="160" fontSize="12" fill="#000" textAnchor="middle">A</text>
-                  <text x="315" y="160" fontSize="12" fill="#000" textAnchor="middle">B</text>
+                  <text x="210" y="70" fontSize="12" fill="#ef4444" textAnchor="middle">الزاوية = {display.jointAngle}°</text>
                 </svg>
               </div>
             </div>
